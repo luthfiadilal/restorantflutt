@@ -1,0 +1,64 @@
+import 'package:flutter/material.dart';
+import 'package:restoranapp/core/api/api_service.dart';
+import 'package:restoranapp/core/api/api_state.dart';
+import 'package:restoranapp/features/restaurant/models/restaurant_detail.dart';
+import 'package:restoranapp/features/restaurant/models/restaurant_list.dart';
+
+
+
+class RestaurantViewModel extends ChangeNotifier {
+  final ApiService _apiService = ApiService();
+
+  ApiState<RestaurantListResponse> _restaurantListState = ApiLoading();
+  ApiState<RestaurantDetailResponse> _restaurantDetailState = ApiLoading();
+  ApiState<RestaurantListResponse> _searchResultState = ApiSuccess(RestaurantListResponse(error: false, message: 'success', founded: 0, restaurants: []));
+
+  ApiState<RestaurantListResponse> get restaurantListState => _restaurantListState;
+  ApiState<RestaurantDetailResponse> get restaurantDetailState => _restaurantDetailState;
+  ApiState<RestaurantListResponse> get searchResultState => _searchResultState;
+
+  Future<void> fetchRestaurantList() async {
+    _restaurantListState = ApiLoading();
+    notifyListeners();
+    try {
+      final restaurants = await _apiService.getRestaurantList();
+      _restaurantListState = ApiSuccess(restaurants);
+    } catch (e) {
+      _restaurantListState = ApiError(e.toString());
+    }
+    notifyListeners();
+  }
+
+  Future<void> fetchRestaurantDetail(String id) async {
+    _restaurantDetailState = ApiLoading();
+    notifyListeners();
+    try {
+      final restaurant = await _apiService.getRestaurantDetail(id);
+      _restaurantDetailState = ApiSuccess(restaurant);
+    } catch (e) {
+      _restaurantDetailState = ApiError(e.toString());
+    }
+    notifyListeners();
+  }
+
+  Future<void> searchRestaurants(String query) async {
+    if (query.isEmpty) {
+      print('Query is empty. Clearing search results.');
+      _searchResultState = ApiSuccess(RestaurantListResponse(error: false, message: 'success', founded: 0, restaurants: []));
+      notifyListeners();
+    } else {
+      print('Searching for: $query');
+      _searchResultState = ApiLoading();
+      notifyListeners();
+      try {
+        final result = await _apiService.searchRestaurants(query);
+        print('Search successful. Found ${result.restaurants.length} results.');
+        _searchResultState = ApiSuccess(result);
+      } catch (e) {
+        print('Search failed with error: $e');
+        _searchResultState = ApiError(e.toString());
+      }
+      notifyListeners();
+    }
+  }
+}

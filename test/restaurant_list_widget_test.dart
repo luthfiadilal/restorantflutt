@@ -1,0 +1,38 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+import 'package:restoranapp/features/restaurant/viewmodels/restaurant_view_model.dart';
+
+import 'package:restoranapp/core/api/api_state.dart';
+
+class DummyWidget extends StatelessWidget {
+  const DummyWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<RestaurantViewModel>(
+      builder: (context, viewModel, _) {
+        if (viewModel.restaurantListState is ApiLoading) {
+          return const CircularProgressIndicator();
+        } else {
+          return const Text('Done');
+        }
+      },
+    );
+  }
+}
+
+void main() {
+  testWidgets('Menampilkan CircularProgressIndicator ketika state loading', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ChangeNotifierProvider(
+        create: (_) => RestaurantViewModel(),
+        child: const MaterialApp(home: Scaffold(body: DummyWidget())),
+      ),
+    );
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+  });
+}

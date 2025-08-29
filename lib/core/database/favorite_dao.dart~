@@ -1,0 +1,42 @@
+import 'package:restoranapp/features/favorites/models/favorite.dart';
+import 'package:sqflite/sqflite.dart';
+import 'favorite_database.dart';
+
+class FavoriteDao {
+  final FavoriteDatabase _database = FavoriteDatabase.instance;
+
+  Future<Favorite> create(Favorite favorite) async {
+    final db = await _database.database;
+    final id = await db.insert(tableFavorites, favorite.toJson());
+    return favorite.copy(id: id);
+  }
+
+  Future<List<Favorite>> readAllFavorites() async {
+    final db = await _database.database;
+    const orderBy = '${FavoriteFields.name} ASC';
+    final result = await db.query(tableFavorites, orderBy: orderBy);
+
+    return result.map((json) => Favorite.fromJson(json)).toList();
+  }
+
+  Future<int> delete(String restaurantId) async {
+    final db = await _database.database;
+
+    return await db.delete(
+      tableFavorites,
+      where: '${FavoriteFields.restaurantId} = ?',
+      whereArgs: [restaurantId],
+    );
+  }
+
+  Future<bool> isFavorite(String restaurantId) async {
+    final db = await _database.database;
+    final result = await db.query(
+      tableFavorites,
+      where: '${FavoriteFields.restaurantId} = ?',
+      whereArgs: [restaurantId],
+    );
+
+    return result.isNotEmpty;
+  }
+}

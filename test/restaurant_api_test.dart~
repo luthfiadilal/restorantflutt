@@ -1,0 +1,11 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:restoranapp/core/api/api_service.dart';
+
+void main() {
+  final api = ApiService();
+
+  testWidgets('Harus ambil data restoran dari API Dicoding', (tester) async {
+    final result = await api.getRestaurantList();
+    expect(result.restaurants.isNotEmpty, true);
+  });
+}
