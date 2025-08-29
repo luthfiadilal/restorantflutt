@@ -41,7 +41,7 @@ class ReminderViewModel extends ChangeNotifier {
       0,
       'Waktunya Istirahat!',
       'Sudah jam 23:15, jangan lupa tidur cukup 😴',
-      _nextInstanceOf2315(),
+      _nextInstanceOf11(),
       const NotificationDetails(
         android: AndroidNotificationDetails(
           'daily_channel',
@@ -56,15 +56,14 @@ class ReminderViewModel extends ChangeNotifier {
     );
   }
 
-  tz.TZDateTime _nextInstanceOf2315() {
+  tz.TZDateTime _nextInstanceOf11() {
     final now = tz.TZDateTime.now(tz.local);
     var scheduledDate = tz.TZDateTime(
       tz.local,
       now.year,
       now.month,
       now.day,
-      23,
-      20, // menitnya
+      11, // menitnya
     );
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
