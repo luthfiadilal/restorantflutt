@@ -59,27 +59,54 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 24),
           Consumer<ReminderViewModel>(
             builder: (context, reminderViewModel, child) {
-              return SwitchListTile(
-                title: const Text(
-                  'Daily Reminder (11:00 AM)',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                value: reminderViewModel.isReminderOn,
-                onChanged: (value) async {
-                  await reminderViewModel.toggleReminder(value);
-
-                  if (value) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Daily reminder aktif ✅")),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Daily reminder dimatikan ❌"),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SwitchListTile(
+                    title: Text(
+                      "Daily Reminder (${reminderViewModel.hour.toString().padLeft(2, '0')}:${reminderViewModel.minute.toString().padLeft(2, '0')})",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
-                    );
-                  }
-                },
+                    ),
+                    value: reminderViewModel.isReminderOn,
+                    onChanged: (value) async {
+                      await reminderViewModel.toggleReminder(value);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            value
+                                ? "Daily reminder aktif ✅"
+                                : "Daily reminder dimatikan ❌",
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final picked = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay(
+                          hour: reminderViewModel.hour,
+                          minute: reminderViewModel.minute,
+                        ),
+                      );
+                      if (picked != null) {
+                        await reminderViewModel.setReminderTime(picked);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              "Reminder diatur ke ${picked.hour}:${picked.minute.toString().padLeft(2, '0')}",
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    child: const Text("Atur Jam Reminder"),
+                  ),
+                ],
               );
             },
           ),
