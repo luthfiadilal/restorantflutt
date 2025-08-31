@@ -65,8 +65,20 @@ class SettingsScreen extends StatelessWidget {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 value: reminderViewModel.isReminderOn,
-                onChanged: (value) {
-                  reminderViewModel.toggleReminder(value);
+                onChanged: (value) async {
+                  await reminderViewModel.toggleReminder(value);
+
+                  if (value) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Daily reminder aktif ✅")),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Daily reminder dimatikan ❌"),
+                      ),
+                    );
+                  }
                 },
               );
             },
