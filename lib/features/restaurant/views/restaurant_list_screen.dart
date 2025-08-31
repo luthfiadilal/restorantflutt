@@ -1,9 +1,7 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/api/api_state.dart';
-
 import '../models/restaurant_list.dart';
 import '../viewmodels/restaurant_view_model.dart';
 import 'widgets/restaurant_card.dart';
@@ -21,7 +19,8 @@ class _RestaurantListScreenState extends State<RestaurantListScreen> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<RestaurantViewModel>(context, listen: false).fetchRestaurantList();
+      Provider.of<RestaurantViewModel>(context, listen: false)
+          .fetchRestaurantList();
     });
   }
 
@@ -30,11 +29,11 @@ class _RestaurantListScreenState extends State<RestaurantListScreen> {
     return Consumer<RestaurantViewModel>(
       builder: (context, viewModel, child) {
         final ApiState<RestaurantListResponse> state =
-        (viewModel.searchResultState is ApiSuccess<RestaurantListResponse> &&
-            (viewModel.searchResultState as ApiSuccess).data.restaurants.isNotEmpty)
+        viewModel.isSearching
             ? viewModel.searchResultState
             : viewModel.restaurantListState;
 
+        // 🔍 Debug log
         if (state is ApiLoading) {
           print('UI is in Loading state');
         } else if (state is ApiSuccess<RestaurantListResponse>) {
@@ -44,15 +43,18 @@ class _RestaurantListScreenState extends State<RestaurantListScreen> {
         }
 
         return switch (state) {
-          ApiLoading() => const Center(child: CircularProgressIndicator()),
-          ApiSuccess<RestaurantListResponse>(data: var data) => ListView.builder(
-            itemCount: data.restaurants.length,
-            itemBuilder: (context, index) {
-              final restaurant = data.restaurants[index];
-              return RestaurantCard(restaurant: restaurant);
-            },
-          ),
-          ApiError(message: var message) => Center(child: Text('Error: $message')),
+          ApiLoading() =>
+          const Center(child: CircularProgressIndicator()),
+          ApiSuccess<RestaurantListResponse>(data: var data) =>
+              ListView.builder(
+                itemCount: data.restaurants.length,
+                itemBuilder: (context, index) {
+                  final restaurant = data.restaurants[index];
+                  return RestaurantCard(restaurant: restaurant);
+                },
+              ),
+          ApiError(message: var message) =>
+              Center(child: Text('Error: $message')),
         };
       },
     );

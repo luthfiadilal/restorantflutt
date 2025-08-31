@@ -51,7 +51,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   filled: true,
                   fillColor: Colors.white,
                 ),
-                onChanged: (query) {
+                textInputAction: TextInputAction.search, // tombol enter berubah jadi "Search"
+                onSubmitted: (query) {
+                  // ⬅️ hanya jalan saat tekan enter/search
+                  final viewModel = Provider.of<RestaurantViewModel>(context, listen: false);
                   viewModel.searchRestaurants(query);
                 },
               ),

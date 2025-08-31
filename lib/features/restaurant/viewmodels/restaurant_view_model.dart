@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:restoranapp/core/api/api_service.dart';
 import 'package:restoranapp/core/api/api_state.dart';
@@ -6,9 +7,12 @@ import 'package:restoranapp/features/restaurant/models/restaurant_list.dart';
 
 class RestaurantViewModel extends ChangeNotifier {
   final ApiService _apiService;
+  bool _isSearching = false;
+
+  bool get isSearching => _isSearching;
 
   RestaurantViewModel({ApiService? apiService})
-    : _apiService = apiService ?? ApiService();
+      : _apiService = apiService ?? ApiService();
 
   ApiState<RestaurantListResponse> _restaurantListState = ApiLoading();
   ApiState<RestaurantDetailResponse> _restaurantDetailState = ApiLoading();
@@ -20,6 +24,8 @@ class RestaurantViewModel extends ChangeNotifier {
       restaurants: [],
     ),
   );
+
+  Timer? _debounce; // untuk debounce search
 
   ApiState<RestaurantListResponse> get restaurantListState =>
       _restaurantListState;
@@ -52,8 +58,10 @@ class RestaurantViewModel extends ChangeNotifier {
   }
 
   Future<void> searchRestaurants(String query) async {
+    _debounce?.cancel();
+
     if (query.isEmpty) {
-      print('Query is empty. Clearing search results.');
+      _isSearching = false; // ✅ bukan search
       _searchResultState = ApiSuccess(
         RestaurantListResponse(
           error: false,
@@ -63,19 +71,22 @@ class RestaurantViewModel extends ChangeNotifier {
         ),
       );
       notifyListeners();
-    } else {
-      print('Searching for: $query');
-      _searchResultState = ApiLoading();
-      notifyListeners();
+      return;
+    }
+
+    _isSearching = true; // ✅ lagi search
+    _searchResultState = ApiLoading();
+    notifyListeners();
+
+    _debounce = Timer(const Duration(milliseconds: 1500), () async {
       try {
         final result = await _apiService.searchRestaurants(query);
-        print('Search successful. Found ${result.restaurants.length} results.');
         _searchResultState = ApiSuccess(result);
       } catch (e) {
-        print('Search failed with error: $e');
         _searchResultState = ApiError(e.toString());
       }
       notifyListeners();
-    }
+    });
   }
+
 }
